@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Predictors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F4F5F1;
+    --panel: #FFFFFF;
+    --ink: #131A16;
+    --ink-soft: #5B6A62;
+    --border: #E1E4DB;
+
+    --health: #1F7A5C;
+    --health-soft: #E3F2EA;
+    --jee: #35468C;
+    --jee-soft: #E7EAF6;
+    --flight: #B85C2B;
+    --flight-soft: #F6E8DB;
+  }
+  *{ box-sizing: border-box; }
+  html, body{ margin: 0; padding: 0; }
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", -apple-system, sans-serif;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .shell{ display: flex; min-height: 100vh; }
+
+  nav.sidebar{
+    width: 252px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 30px 18px;
+    display: flex;
+    flex-direction: column;
+  }
+  .brand{
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+    padding: 0 10px 28px;
+  }
+  .nav-item{
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 3px;
+    transition: background .15s ease, color .15s ease;
+  }
+  .nav-item:hover{ background: var(--bg); }
+  .nav-item .icon{
+    width: 17px; height: 17px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-item .icon svg{ width: 100%; height: 100%; }
+  .nav-item[data-model="health"] .icon svg{ stroke: var(--health); }
+  .nav-item[data-model="jee"] .icon svg{ stroke: var(--jee); }
+  .nav-item[data-model="flight"] .icon svg{ stroke: var(--flight); }
+
+  .nav-item.active{ color: var(--ink); }
+  .nav-item.active[data-model="health"]{ background: var(--health-soft); }
+  .nav-item.active[data-model="jee"]{ background: var(--jee-soft); }
+  .nav-item.active[data-model="flight"]{ background: var(--flight-soft); }
+
+  .sidebar-foot{
+    margin-top: auto;
+    padding-top: 16px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    border-top: 1px solid var(--border);
+  }
+
+  main{ flex: 1; overflow-x: hidden; }
+  .panel{ display: none; }
+  .panel.active{ display: block; animation: fadeSlide .35s ease; }
+  @keyframes fadeSlide{
+    from{ opacity: 0; transform: translateY(6px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  .hero{ padding: 56px 52px 40px; position: relative; overflow: hidden; }
+  .hero::before{
+    content: "";
+    position: absolute;
+    top: -120px; right: -80px;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    opacity: 0.55;
+    filter: blur(10px);
+  }
+  #panel-health .hero::before{ background: var(--health-soft); }
+  #panel-jee .hero::before{ background: var(--jee-soft); }
+  #panel-flight .hero::before{ background: var(--flight-soft); }
+
+  .hero-inner{ position: relative; max-width: 640px; }
+  .eyebrow{ font-size: 12.5px; font-weight: 700; letter-spacing: 0.02em; }
+  #panel-health .eyebrow{ color: var(--health); }
+  #panel-jee .eyebrow{ color: var(--jee); }
+  #panel-flight .eyebrow{ color: var(--flight); }
+
+  .hero h1{
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 40px;
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    margin: 10px 0 12px;
+  }
+  .hero p{ color: var(--ink-soft); font-size: 15.5px; max-width: 50ch; margin: 0; }
+
+  .content{ padding: 0 52px 64px; max-width: 640px; }
+
+  form{
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 26px;
+  }
+  .grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 18px 20px; }
+  .field.full{ grid-column: 1 / -1; }
+  label{
+    display: block; font-size: 12.5px; font-weight: 600;
+    color: var(--ink-soft); margin-bottom: 7px;
+  }
+  input, select{
+    width: 100%;
+    font: inherit;
+    font-size: 14px;
+    padding: 10px 11px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--ink);
+    transition: border-color .12s ease;
+  }
+  input:focus, select:focus{ outline: none; }
+  #panel-health input:focus, #panel-health select:focus{ border-color: var(--health); }
+  #panel-jee input:focus, #panel-jee select:focus{ border-color: var(--jee); }
+  #panel-flight input:focus, #panel-flight select:focus{ border-color: var(--flight); }
+
+  .predict-btn{
+    margin-top: 22px;
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 7px;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    transition: opacity .15s ease;
+  }
+  #panel-health .predict-btn{ background: var(--health); }
+  #panel-jee .predict-btn{ background: var(--jee); }
+  #panel-flight .predict-btn{ background: var(--flight); }
+  .predict-btn:hover{ opacity: 0.9; }
+  .predict-btn:disabled{ opacity: 0.6; cursor: wait; }
+
+  .spinner{
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+  }
+  .predict-btn.loading .spinner{ display: inline-block; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  .readout{
+    margin-top: 22px;
+    border-radius: 10px;
+    padding: 24px 26px;
+    border-left: 3px solid;
+    display: none;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .readout.show{ display: block; animation: fadeSlide .3s ease; }
+  #panel-health .readout{ border-left-color: var(--health); }
+  #panel-jee .readout{ border-left-color: var(--jee); }
+  #panel-flight .readout{ border-left-color: var(--flight); }
+
+  .readout .r-label{ font-size: 12px; font-weight: 600; color: var(--ink-soft); margin-bottom: 8px; }
+  .readout .r-value{
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: -0.01em;
+  }
+  .readout.error{ border-left-color: #B5432B; }
+  .readout.error .r-value{
+    font-family: "Inter", sans-serif;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+
+  .assumption{ margin-top: 18px; font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+
+  @media (max-width: 760px){
+    .shell{ flex-direction: column; }
+    nav.sidebar{
+      width: 100%; flex-direction: row; align-items: center;
+      padding: 14px 16px; overflow-x: auto; gap: 4px;
+    }
+    .brand{ display: none; }
+    .sidebar-foot{ display: none; }
+    .nav-item{ white-space: nowrap; margin-bottom: 0; }
+    .hero{ padding: 36px 22px 28px; }
+    .hero h1{ font-size: 30px; }
+    .hero::before{ width: 260px; height: 260px; top: -80px; right: -60px; }
+    .content{ padding: 0 22px 48px; }
+    .grid{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <nav class="sidebar">
+    <div class="brand">Predictors</div>
+
+    <div class="nav-item active" data-model="health">
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg></span>
+      Health Predictor
+    </div>
+    <div class="nav-item" data-model="jee">
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg></span>
+      JEE Rank Predictor
+    </div>
+    <div class="nav-item" data-model="flight">
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5a1.5 1.5 0 0 0-2-2L14 9l-8.2-1.8-1 1L10 12l-3 3H4l-1 1 4 2 2 4 1-1v-3l3-3 4.2 4.2 1-1Z"/></svg></span>
+      Flight Price Predictor
+    </div>
+
+    <div class="sidebar-foot">Runs against your own trained models.</div>
+  </nav>
+
+  <main>
+
+    <section class="panel active" id="panel-health">
+      <div class="hero">
+        <div class="hero-inner">
+          <div class="eyebrow">Health</div>
+          <h1>What's your health risk?</h1>
+          <p>Enter a few lifestyle details and the model will tell you where you land.</p>
+        </div>
+      </div>
+      <div class="content">
+        <form id="form-health">
+          <div class="grid">
+            <div class="field">
+              <label for="h-age">Age</label>
+              <input type="number" id="h-age" value="40" required>
+            </div>
+            <div class="field">
+              <label for="h-bmi">BMI</label>
+              <input type="number" id="h-bmi" value="24" step="any" required>
+            </div>
+            <div class="field">
+              <label for="h-sleep">Sleep (hours/night)</label>
+              <input type="number" id="h-sleep" value="7" step="any" required>
+            </div>
+            <div class="field">
+              <label for="h-exercise">Exercise level</label>
+              <select id="h-exercise">
+                <option value="none">None</option>
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="h-sugar">Sugar intake</label>
+              <select id="h-sugar">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="h-smoking">Smoking</label>
+              <select id="h-smoking">
+                <option value="no" selected>No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="h-alcohol">Alcohol</label>
+              <select id="h-alcohol">
+                <option value="no" selected>No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="predict-btn"><span class="spinner"></span><span class="btn-text">Predict risk</span></button>
+        </form>
+
+        <div class="readout" id="readout-health">
+          <div class="r-label">Prediction</div>
+          <div class="r-value" id="readout-health-value">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-jee">
+      <div class="hero">
+        <div class="hero-inner">
+          <div class="eyebrow">JEE</div>
+          <h1>Where will you rank?</h1>
+          <p>Enter your percentile and category to get a predicted rank from the model.</p>
+        </div>
+      </div>
+      <div class="content">
+        <form id="form-jee">
+          <div class="grid">
+            <div class="field full">
+              <label for="j-percentile">JEE Main percentile</label>
+              <input type="number" id="j-percentile" value="95" step="any" min="0" max="100" required>
+            </div>
+            <div class="field">
+              <label for="j-category">Category</label>
+              <select id="j-category">
+                <option value="general" selected>General</option>
+                <option value="ews">EWS</option>
+                <option value="obc">OBC</option>
+                <option value="sc">SC</option>
+                <option value="st">ST</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="j-gender">Gender</label>
+              <select id="j-gender">
+                <option value="male" selected>Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="predict-btn"><span class="spinner"></span><span class="btn-text">Predict rank</span></button>
+        </form>
+
+        <div class="readout" id="readout-jee">
+          <div class="r-label">Predicted rank</div>
+          <div class="r-value" id="readout-jee-value">—</div>
+        </div>
+
+        <div class="assumption">
+          Fields shown (percentile, category, gender) are a placeholder guess — tell me your actual training
+          CSV columns and I'll match this form to it exactly.
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-flight">
+      <div class="hero">
+        <div class="hero-inner">
+          <div class="eyebrow">Flight</div>
+          <h1>What will the fare be?</h1>
+          <p>Enter trip details to get a predicted price from the model.</p>
+        </div>
+      </div>
+      <div class="content">
+        <form id="form-flight">
+          <div class="grid">
+            <div class="field">
+              <label for="f-source">From</label>
+              <input type="text" id="f-source" value="Delhi" required>
+            </div>
+            <div class="field">
+              <label for="f-dest">To</label>
+              <input type="text" id="f-dest" value="Mumbai" required>
+            </div>
+            <div class="field">
+              <label for="f-airline">Airline</label>
+              <input type="text" id="f-airline" value="IndiGo" required>
+            </div>
+            <div class="field">
+              <label for="f-class">Class</label>
+              <select id="f-class">
+                <option value="economy" selected>Economy</option>
+                <option value="business">Business</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-stops">Stops</label>
+              <select id="f-stops">
+                <option value="0" selected>Non-stop</option>
+                <option value="1">1 stop</option>
+                <option value="2">2+ stops</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-departure">Departure time</label>
+              <select id="f-departure">
+                <option value="morning" selected>Morning</option>
+                <option value="afternoon">Afternoon</option>
+                <option value="evening">Evening</option>
+                <option value="night">Night</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-duration">Duration (hours)</label>
+              <input type="number" id="f-duration" value="2.5" step="any" required>
+            </div>
+            <div class="field">
+              <label for="f-daysleft">Days left until departure</label>
+              <input type="number" id="f-daysleft" value="15" required>
+            </div>
+          </div>
+          <button type="submit" class="predict-btn"><span class="spinner"></span><span class="btn-text">Predict price</span></button>
+        </form>
+
+        <div class="readout" id="readout-flight">
+          <div class="r-label">Predicted fare</div>
+          <div class="r-value" id="readout-flight-value">—</div>
+        </div>
+
+        <div class="assumption">
+          Fields shown (route, airline, class, stops, duration, days left) are a placeholder guess based on
+          common flight-price datasets — tell me your actual training CSV columns and I'll match this form to it exactly.
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      navItems.forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + item.dataset.model).classList.add('active');
+    });
+  });
+
+  function countUp(el, target, prefix, suffix, duration){
+    const startTime = performance.now();
+    function tick(now){
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(target * eased);
+      el.textContent = prefix + current.toLocaleString('en-IN') + suffix;
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  const ENDPOINTS = {
+    health: '/predict/health',
+    jee: '/predict/jee',
+    flight: '/predict/flight',
+  };
+
+  async function handleSubmit(modelKey, payload, onResult){
+    const form = document.getElementById('form-' + modelKey);
+    const btn = form.querySelector('.predict-btn');
+    const readout = document.getElementById('readout-' + modelKey);
+    const valueEl = document.getElementById('readout-' + modelKey + '-value');
+
+    btn.disabled = true;
+    btn.classList.add('loading');
+    readout.classList.remove('error');
+
+    try {
+      const res = await fetch(ENDPOINTS[modelKey], {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Server responded with ' + res.status);
+      const data = await res.json();
+      readout.classList.add('show');
+      onResult(data, valueEl);
+    } catch (err) {
+      readout.classList.add('show', 'error');
+      valueEl.textContent = 'Could not reach ' + ENDPOINTS[modelKey] + ' — connect this form to your trained model\'s backend. (' + err.message + ')';
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+    }
+  }
+
+  document.getElementById('form-health').addEventListener('submit', e => {
+    e.preventDefault();
+    const payload = {
+      age: Number(document.getElementById('h-age').value),
+      bmi: Number(document.getElementById('h-bmi').value),
+      sleep: Number(document.getElementById('h-sleep').value),
+      exercise: document.getElementById('h-exercise').value,
+      sugar_intake: document.getElementById('h-sugar').value,
+      smoking: document.getElementById('h-smoking').value,
+      alcohol: document.getElementById('h-alcohol').value,
+    };
+    handleSubmit('health', payload, (data, el) => {
+      el.textContent = data.prediction || data.health_risk || JSON.stringify(data);
+    });
+  });
+
+  document.getElementById('form-jee').addEventListener('submit', e => {
+    e.preventDefault();
+    const payload = {
+      percentile: Number(document.getElementById('j-percentile').value),
+      category: document.getElementById('j-category').value,
+      gender: document.getElementById('j-gender').value,
+    };
+    handleSubmit('jee', payload, (data, el) => {
+      const rank = Number(data.prediction || data.rank);
+      if (!isNaN(rank)) countUp(el, rank, '#', '', 700);
+      else el.textContent = JSON.stringify(data);
+    });
+  });
+
+  document.getElementById('form-flight').addEventListener('submit', e => {
+    e.preventDefault();
+    const payload = {
+      source: document.getElementById('f-source').value,
+      destination: document.getElementById('f-dest').value,
+      airline: document.getElementById('f-airline').value,
+      class: document.getElementById('f-class').value,
+      stops: Number(document.getElementById('f-stops').value),
+      departure_time: document.getElementById('f-departure').value,
+      duration: Number(document.getElementById('f-duration').value),
+      days_left: Number(document.getElementById('f-daysleft').value),
+    };
+    handleSubmit('flight', payload, (data, el) => {
+      const price = Number(data.prediction || data.price);
+      if (!isNaN(price)) countUp(el, price, '\u20B9', '', 700);
+      else el.textContent = JSON.stringify(data);
+    });
+  });
+
+})();
+</script>
+</body>
+</html>
