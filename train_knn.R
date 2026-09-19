@@ -1,6 +1,6 @@
 library(class)
 
-df <- read.csv("data/health_data.csv")
+df <- read.csv("Predictors/data/health_data.csv")
 
 features <- c("age", "bmi", "exercise", "sleep", "sugar_intake", "smoking", "alcohol")
 target <- "health_risk"
@@ -38,6 +38,6 @@ knn_data <- list(
   yesno_map = yesno_map
 )
 
-saveRDS(knn_data, "models/knn_model.rds")
+saveRDS(knn_data, "model/knn_model.rds")
 
 cat("Trained on", nrow(X), "rows. Model saved to models/knn_model.rds\n")
