@@ -27,7 +27,8 @@ test  <- df[-train_i, ]
 
 features <- c("InstituteScore","ProgramScore","Quota","SeatType","Gender","Round","Year")
 
-model <- randomForest(x = train[, features], y = train$Target, ntree = 200, importance = TRUE)
+model <- randomForest(x = train[, features], y = train$Target, ntree = 200,
+                       importance = TRUE, nodesize = 20, sampsize = 50000, do.trace = 10)
 
 pred   <- expm1(predict(model, test[, features]))
 actual <- expm1(test$Target)
