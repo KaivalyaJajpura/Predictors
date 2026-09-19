@@ -2,7 +2,7 @@ if (!require("randomForest")) install.packages("randomForest", repos = "https://
 library(randomForest)
 set.seed(42)
 
-df <- read.csv("merged_jee_cutoff_2018_2025.csv", stringsAsFactors = FALSE)
+df <- read.csv("data/merged_jee_cutoff_2018_2025.csv", stringsAsFactors = FALSE)
 names(df) <- c("Institute","Program","Quota","SeatType","Gender","OpeningRank","ClosingRank","Round","Year")
 
 df$Gender[df$Gender == "F"] <- "Female-only (including Supernumerary)"
